@@ -2,45 +2,32 @@
 
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { stocks, money, type Stock } from "@/lib/data";
+import { money, compactCap } from "@/lib/data";
+import type { StockRow } from "@/lib/market";
 import { BrandLogo } from "./brand-logo";
 
-type SortKey = "ticker" | "investDate" | "volume" | "changePct" | "pricePerShare";
+type SortKey = "ticker" | "investDate" | "marketCapM" | "changePct" | "price";
 
 const columns: { key: SortKey; label: string; align?: "right" }[] = [
   { key: "ticker", label: "Name Stock" },
   { key: "investDate", label: "Invest Date" },
-  { key: "volume", label: "Volume" },
+  { key: "marketCapM", label: "Market Cap" },
   { key: "changePct", label: "Change" },
-  { key: "pricePerShare", label: "Price/stock", align: "right" },
+  { key: "price", label: "Price/stock", align: "right" },
 ];
 
-function volumeToNumber(v: string) {
-  return parseFloat(v) * (v.endsWith("B") ? 1e9 : v.endsWith("M") ? 1e6 : 1);
-}
-
-export function StockTable() {
+export function StockTable({ rows }: { rows: StockRow[] }) {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [asc, setAsc] = useState(true);
 
-  const rows = useMemo(() => {
-    if (!sortKey) return stocks;
-    const sorted = [...stocks].sort((a, b) => {
-      let av: number | string, bv: number | string;
-      if (sortKey === "volume") {
-        av = volumeToNumber(a.volume);
-        bv = volumeToNumber(b.volume);
-      } else if (sortKey === "investDate") {
-        av = Date.parse(a.investDate);
-        bv = Date.parse(b.investDate);
-      } else {
-        av = a[sortKey];
-        bv = b[sortKey];
-      }
+  const sorted = useMemo(() => {
+    if (!sortKey) return rows;
+    return [...rows].sort((a, b) => {
+      const av = sortKey === "investDate" ? Date.parse(a.investDate) : a[sortKey];
+      const bv = sortKey === "investDate" ? Date.parse(b.investDate) : b[sortKey];
       return (av < bv ? -1 : av > bv ? 1 : 0) * (asc ? 1 : -1);
     });
-    return sorted;
-  }, [sortKey, asc]);
+  }, [rows, sortKey, asc]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setAsc(!asc);
@@ -71,7 +58,7 @@ export function StockTable() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((s: Stock) => {
+            {sorted.map((s) => {
               const up = s.changePct >= 0;
               return (
                 <tr key={s.ticker} className="border-b border-line last:border-b-0">
@@ -85,7 +72,7 @@ export function StockTable() {
                     </div>
                   </td>
                   <td className="py-4 font-medium">{s.investDate}</td>
-                  <td className="py-4 font-medium">{s.volume}</td>
+                  <td className="py-4 font-medium">{compactCap(s.marketCapM)}</td>
                   <td className="py-4">
                     <span
                       className={`inline-flex items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -96,7 +83,7 @@ export function StockTable() {
                       {Math.abs(s.changePct).toFixed(2)}%
                     </span>
                   </td>
-                  <td className="py-4 text-right font-semibold">{money(s.pricePerShare)}</td>
+                  <td className="py-4 text-right font-semibold">{money(s.price)}</td>
                 </tr>
               );
             })}

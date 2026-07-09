@@ -1,8 +1,9 @@
 import { ArrowUp, ArrowDown } from "lucide-react";
-import { stocks, money, type Stock } from "@/lib/data";
+import { money } from "@/lib/data";
+import type { StockRow } from "@/lib/market";
 import { BrandLogo } from "./brand-logo";
 
-function StockCard({ stock }: { stock: Stock }) {
+function StockCard({ stock }: { stock: StockRow }) {
   const up = stock.changePct >= 0;
   return (
     <div className="min-w-60 flex-1 rounded-2xl border border-line bg-card p-5">
@@ -19,16 +20,16 @@ function StockCard({ stock }: { stock: Stock }) {
           {up ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
           {Math.abs(stock.changePct).toFixed(2)}%
         </span>
-        vs last month
+        today
       </p>
     </div>
   );
 }
 
-export function StockCards() {
+export function StockCards({ rows }: { rows: StockRow[] }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-1">
-      {stocks.slice(0, 4).map((s) => (
+      {rows.slice(0, 4).map((s) => (
         <StockCard key={s.ticker} stock={s} />
       ))}
     </div>

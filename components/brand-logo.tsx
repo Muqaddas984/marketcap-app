@@ -43,7 +43,7 @@ export function BrandLogo({ ticker, size = 40 }: { ticker: string; size?: number
           </svg>
         </div>
       );
-    case "GOGL":
+    case "GOOGL":
       return (
         <div className={`${base} border border-line bg-white`} style={style}>
           <GoogleG />
@@ -63,6 +63,23 @@ export function BrandLogo({ ticker, size = 40 }: { ticker: string; size?: number
           <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
             <path d={TWITTER_PATH} />
           </svg>
+        </div>
+      );
+    case "MSFT":
+      return (
+        <div className={`${base} border border-line bg-white`} style={style}>
+          <svg viewBox="0 0 24 24" className="h-5 w-5">
+            <rect x="2" y="2" width="9.5" height="9.5" fill="#F25022" />
+            <rect x="12.5" y="2" width="9.5" height="9.5" fill="#7FBA00" />
+            <rect x="2" y="12.5" width="9.5" height="9.5" fill="#00A4EF" />
+            <rect x="12.5" y="12.5" width="9.5" height="9.5" fill="#FFB900" />
+          </svg>
+        </div>
+      );
+    case "NVDA":
+      return (
+        <div className={`${base} bg-[#76B900] text-sm font-bold text-white`} style={style}>
+          NV
         </div>
       );
     default:

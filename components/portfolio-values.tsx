@@ -1,7 +1,19 @@
-import { ArrowUp, ChevronRight, EllipsisVertical, Sparkles } from "lucide-react";
-import { portfolio, money } from "@/lib/data";
+import { ArrowDown, ArrowUp, ChevronRight, EllipsisVertical, Sparkles } from "lucide-react";
+import { money } from "@/lib/data";
 
-export function PortfolioValues() {
+export function PortfolioValues({
+  total,
+  profit,
+  changePct,
+  holdingsCount,
+}: {
+  total: number;
+  profit: number;
+  changePct: number;
+  holdingsCount: number;
+}) {
+  const up = changePct >= 0;
+  const gained = profit >= 0;
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
       <div className="flex items-start justify-between">
@@ -12,16 +24,23 @@ export function PortfolioValues() {
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className="text-4xl font-extrabold tracking-tight">{money(portfolio.total)}</span>
-        <span className="flex items-center gap-0.5 rounded-full bg-positive-soft px-2.5 py-1 text-xs font-semibold text-positive">
-          <ArrowUp className="h-3.5 w-3.5" />
-          {portfolio.changePct.toFixed(2)}%
+        <span className="text-4xl font-extrabold tracking-tight">{money(total)}</span>
+        <span
+          className={`flex items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+            up ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"
+          }`}
+        >
+          {up ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+          {Math.abs(changePct).toFixed(2)}%
         </span>
       </div>
 
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Your profit is <span className="font-semibold text-ink">{money(portfolio.profit)}</span>{" "}
-        this month. That&apos;s the best result in the last three months.
+        Your total {gained ? "profit" : "loss"} is{" "}
+        <span className={`font-semibold ${gained ? "text-ink" : "text-negative"}`}>
+          {money(Math.abs(profit))}
+        </span>{" "}
+        across your {holdingsCount} holdings.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-3">
