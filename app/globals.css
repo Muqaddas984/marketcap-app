@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f4f6;
+  --card: #ffffff;
+  --border: #ebebef;
+  --foreground: #16161d;
+  --muted: #8e8ea3;
+  --accent: #2563eb;
+  --accent-soft: #e9f0fe;
+  --positive: #16a34a;
+  --positive-soft: #e8f7ee;
+  --negative: #e11d48;
+  --negative-soft: #fdeaef;
+}
+
+.dark {
+  --background: #0f0f14;
+  --card: #17171f;
+  --border: #262630;
+  --foreground: #f2f2f6;
+  --muted: #9a9aae;
+  --accent: #6b96ff;
+  --accent-soft: #17233b;
+  --positive: #34c46c;
+  --positive-soft: #14251b;
+  --negative: #f4517a;
+  --negative-soft: #2b1620;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card: var(--card);
+  --color-line: var(--border);
+  --color-ink: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --font-sans: var(--font-jakarta);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
 }

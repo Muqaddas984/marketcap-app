@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Skill(dataviz)",
+      "Skill(dataviz:*)",
+      "Bash(node scripts/validate_palette.js \"#f43f5e,#7c5cfc,#16a34a,#e11d48\" --mode light)",
+      "Bash(npm run *)"
+    ]
+  }
+}
