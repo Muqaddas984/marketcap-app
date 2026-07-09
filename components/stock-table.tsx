@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronsUpDown, Trash2 } from "lucide-react";
+import { deleteHolding } from "@/app/actions";
 import { money, compactCap } from "@/lib/data";
 import type { StockRow } from "@/lib/market";
+import { AddHolding } from "./add-holding";
 import { BrandLogo } from "./brand-logo";
 
 type SortKey = "ticker" | "investDate" | "marketCapM" | "changePct" | "price";
@@ -16,7 +18,7 @@ const columns: { key: SortKey; label: string; align?: "right" }[] = [
   { key: "price", label: "Price/stock", align: "right" },
 ];
 
-export function StockTable({ rows }: { rows: StockRow[] }) {
+export function StockTable({ rows, editable = false }: { rows: StockRow[]; editable?: boolean }) {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [asc, setAsc] = useState(true);
 
@@ -39,7 +41,15 @@ export function StockTable({ rows }: { rows: StockRow[] }) {
 
   return (
     <div className="rounded-2xl border border-line bg-card p-6">
-      <h2 className="text-lg font-bold">My Stock</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-bold">My Stock</h2>
+        {editable && <AddHolding />}
+      </div>
+      {rows.length === 0 && (
+        <p className="mt-4 rounded-xl bg-background p-4 text-sm text-muted">
+          No holdings yet — click &quot;Add holding&quot; to track your first stock.
+        </p>
+      )}
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-155 text-sm">
           <thead>
@@ -55,6 +65,7 @@ export function StockTable({ rows }: { rows: StockRow[] }) {
                   </button>
                 </th>
               ))}
+              {editable && <th className="w-10" aria-label="Actions" />}
             </tr>
           </thead>
           <tbody>
@@ -84,6 +95,20 @@ export function StockTable({ rows }: { rows: StockRow[] }) {
                     </span>
                   </td>
                   <td className="py-4 text-right font-semibold">{money(s.price)}</td>
+                  {editable && (
+                    <td className="py-4 pl-3 text-right">
+                      {s.id && (
+                        <form action={deleteHolding.bind(null, s.id)}>
+                          <button
+                            aria-label={`Remove ${s.ticker}`}
+                            className="rounded-md p-1.5 text-muted transition-colors hover:bg-negative-soft hover:text-negative"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </form>
+                      )}
+                    </td>
+                  )}
                 </tr>
               );
             })}

@@ -1,7 +1,8 @@
-import { holdings, fallbackQuotes } from "./data";
+import { fallbackQuotes, type Holding } from "./data";
 import { getQuote, getMarketCap, hasApiKey } from "./finnhub";
 
 export type StockRow = {
+  id?: string;
   ticker: string;
   name: string;
   investDate: string;
@@ -19,14 +20,17 @@ export type DashboardData = {
   live: boolean;
 };
 
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(holdings: Holding[]): Promise<DashboardData> {
   const rows = await Promise.all(
     holdings.map(async (h): Promise<StockRow> => {
       const [quote, cap] = await Promise.all([getQuote(h.ticker), getMarketCap(h.ticker)]);
-      const fb = fallbackQuotes[h.ticker];
-      const price = quote?.price ?? fb.price;
-      const changePct = quote?.changePct ?? fb.changePct;
+      const fb = fallbackQuotes[h.ticker] as
+        | { price: number; changePct: number; marketCapM: number }
+        | undefined;
+      const price = quote?.price ?? fb?.price ?? h.buyPrice;
+      const changePct = quote?.changePct ?? fb?.changePct ?? 0;
       return {
+        id: h.id,
         ticker: h.ticker,
         name: h.name,
         investDate: h.investDate,
@@ -34,7 +38,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         changePct,
         value: price * h.shares,
         profit: (price - h.buyPrice) * h.shares,
-        marketCapM: cap ?? fb.marketCapM,
+        marketCapM: cap ?? fb?.marketCapM ?? 0,
         live: quote !== null,
       };
     })

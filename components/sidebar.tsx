@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   House,
   LayoutGrid,
@@ -6,8 +7,11 @@ import {
   Globe,
   Users,
   Folder,
+  LogIn,
+  LogOut,
   Plus,
 } from "lucide-react";
+import { signOut } from "@/app/actions";
 import { ThemeToggle } from "./theme-toggle";
 
 const mainNav = [
@@ -21,7 +25,7 @@ const mainNav = [
 
 const files = ["Communication", "Affiliates", "Marketing"];
 
-export function Sidebar() {
+export function Sidebar({ email }: { email: string | null }) {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col gap-2 border-r border-line bg-card px-5 py-7 lg:flex">
       <div className="mb-6 flex items-center gap-3 px-2">
@@ -73,7 +77,30 @@ export function Sidebar() {
         ))}
       </div>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col gap-3">
+        {email ? (
+          <div className="flex items-center gap-2 rounded-xl bg-background px-3 py-2.5">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+              {email[0].toUpperCase()}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-xs font-medium">{email}</span>
+            <form action={signOut}>
+              <button
+                aria-label="Sign out"
+                className="rounded-md p-1 text-muted hover:bg-card hover:text-ink"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center justify-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-background"
+          >
+            <LogIn className="h-4 w-4" /> Sign in
+          </Link>
+        )}
         <ThemeToggle />
       </div>
     </aside>

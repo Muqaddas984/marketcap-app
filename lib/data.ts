@@ -1,4 +1,5 @@
 export type Holding = {
+  id?: string;
   ticker: string;
   name: string;
   shares: number;

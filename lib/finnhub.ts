@@ -34,8 +34,19 @@ export async function getQuote(symbol: string): Promise<Quote | null> {
   };
 }
 
+export type Profile = { name: string; marketCapM: number };
+
+/** Company name + market cap (millions USD), cached for an hour. */
+export async function getProfile(symbol: string): Promise<Profile | null> {
+  const p = (await fh(`/stock/profile2?symbol=${symbol}`, 3600)) as
+    | { name?: string; marketCapitalization?: number }
+    | null;
+  if (!p?.name) return null;
+  return { name: p.name, marketCapM: p.marketCapitalization || 0 };
+}
+
 /** Market cap in millions of USD, cached for an hour. */
 export async function getMarketCap(symbol: string): Promise<number | null> {
-  const p = await fh(`/stock/profile2?symbol=${symbol}`, 3600);
-  return p?.marketCapitalization || null;
+  const p = await getProfile(symbol);
+  return p?.marketCapM || null;
 }
