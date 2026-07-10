@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CircleAlert, TriangleAlert } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { StockCards } from "@/components/stock-cards";
+import { StockSearch } from "@/components/stock-search";
 import { PortfolioValues } from "@/components/portfolio-values";
 import { StatisticsChart } from "@/components/statistics-chart";
 import { StockTable } from "@/components/stock-table";
@@ -45,6 +46,7 @@ export default async function Home({
             to build your own.
           </p>
         )}
+        <StockSearch editable={!isDemo} />
         <StockCards rows={rows} />
         <div className="grid gap-5 lg:grid-cols-[5fr_6fr]">
           <PortfolioValues

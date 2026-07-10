@@ -50,3 +50,17 @@ export async function getMarketCap(symbol: string): Promise<number | null> {
   const p = await getProfile(symbol);
   return p?.marketCapM || null;
 }
+
+export type SearchHit = { symbol: string; name: string };
+
+/** Search stocks by ticker or company name, US common stocks first. */
+export async function searchSymbols(query: string): Promise<SearchHit[]> {
+  const r = (await fh(`/search?q=${encodeURIComponent(query)}&exchange=US`, 300)) as {
+    result?: { symbol: string; description: string; type: string }[];
+  } | null;
+  if (!r?.result) return [];
+  return r.result
+    .filter((h) => h.type === "Common Stock" && !h.symbol.includes("."))
+    .slice(0, 8)
+    .map((h) => ({ symbol: h.symbol, name: h.description }));
+}
