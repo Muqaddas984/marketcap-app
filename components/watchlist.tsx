@@ -6,7 +6,7 @@ import { BrandLogo } from "./brand-logo";
 
 export function Watchlist({ items }: { items: WatchItem[] }) {
   return (
-    <div className="rounded-2xl border border-line bg-card p-6">
+    <div id="watchlist" className="scroll-mt-6 rounded-2xl border border-line bg-card p-6">
       <h2 className="text-lg font-bold">Watchlist</h2>
       {items.length === 0 ? (
         <p className="mt-4 rounded-xl bg-background p-4 text-sm text-muted">

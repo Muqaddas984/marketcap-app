@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, ChevronRight, EllipsisVertical, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Sparkles } from "lucide-react";
 import { money } from "@/lib/data";
 import type { StockRow } from "@/lib/market";
 import { BrandLogo } from "./brand-logo";
@@ -27,12 +27,7 @@ export function PortfolioValues({
 
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
-      <div className="flex items-start justify-between">
-        <h2 className="text-lg font-bold">Total Value</h2>
-        <button aria-label="More options" className="rounded-md p-1 text-muted hover:bg-background">
-          <EllipsisVertical className="h-5 w-5" />
-        </button>
-      </div>
+      <h2 className="text-lg font-bold">Total Value</h2>
 
       <div className="mt-4 flex items-center gap-3">
         <span className="text-4xl font-extrabold tracking-tight">{money(total)}</span>
