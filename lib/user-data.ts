@@ -53,6 +53,22 @@ export async function getWatchlistData(): Promise<WatchItem[]> {
   );
 }
 
+/** Whether the signed-in user watches this ticker; returns the row id if so. */
+export async function getWatchRowId(ticker: string): Promise<string | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("watchlist")
+    .select("id")
+    .eq("ticker", ticker)
+    .maybeSingle();
+  return (data?.id as string) ?? null;
+}
+
 export type HistoryPoint = { date: string; value: number };
 
 /** Upsert today's portfolio total so the history chart accumulates one point per day. */

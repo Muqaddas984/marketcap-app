@@ -6,7 +6,10 @@ import { BrandLogo } from "./brand-logo";
 function StockCard({ stock }: { stock: StockRow }) {
   const up = stock.changePct >= 0;
   return (
-    <div className="min-w-60 flex-1 rounded-2xl border border-line bg-card p-5">
+    <a
+      href={`/stock/${stock.ticker}`}
+      className="min-w-60 flex-1 rounded-2xl border border-line bg-card p-5 transition-shadow hover:shadow-md"
+    >
       <div className="flex items-center gap-3">
         <BrandLogo ticker={stock.ticker} />
         <div className="min-w-0">
@@ -22,7 +25,7 @@ function StockCard({ stock }: { stock: StockRow }) {
         </span>
         today
       </p>
-    </div>
+    </a>
   );
 }
 

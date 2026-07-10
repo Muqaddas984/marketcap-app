@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Plus, Search, Star } from "lucide-react";
 import { addHolding, addToWatchlist } from "@/app/actions";
 import type { SearchHit } from "@/lib/finnhub";
@@ -14,6 +15,7 @@ export function StockSearch({ editable }: { editable: boolean }) {
   const [watched, setWatched] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
   const boxRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   function watch(hit: SearchHit) {
     setWatched((prev) => new Set(prev).add(hit.symbol));
@@ -99,10 +101,12 @@ export function StockSearch({ editable }: { editable: boolean }) {
                   className="flex items-center border-b border-line last:border-b-0"
                 >
                   <button
-                    onClick={() => (editable ? setPicked(h) : undefined)}
-                    className={`flex min-w-0 flex-1 items-center gap-3 px-5 py-3 text-left ${
-                      editable ? "hover:bg-background" : "cursor-default"
-                    }`}
+                    onClick={() => {
+                      setOpen(false);
+                      router.push(`/stock/${h.symbol}`);
+                    }}
+                    title={`View ${h.symbol} chart and details`}
+                    className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3 text-left hover:bg-background"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
                       {h.symbol.slice(0, 2)}
@@ -111,19 +115,28 @@ export function StockSearch({ editable }: { editable: boolean }) {
                       <span className="block text-sm font-bold">{h.symbol}</span>
                       <span className="block truncate text-xs text-muted">{h.name}</span>
                     </span>
-                    {editable && <Plus className="h-4 w-4 shrink-0 text-muted" />}
                   </button>
                   {editable && (
-                    <button
-                      onClick={() => watch(h)}
-                      aria-label={`Watch ${h.symbol}`}
-                      title="Add to watchlist"
-                      className="mr-3 rounded-md p-2 text-muted transition-colors hover:bg-background hover:text-accent"
-                    >
-                      <Star
-                        className={`h-4 w-4 ${watched.has(h.symbol) ? "fill-accent text-accent" : ""}`}
-                      />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setPicked(h)}
+                        aria-label={`Quick add ${h.symbol}`}
+                        title="Quick add to portfolio"
+                        className="rounded-md p-2 text-muted transition-colors hover:bg-background hover:text-accent"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => watch(h)}
+                        aria-label={`Watch ${h.symbol}`}
+                        title="Add to watchlist"
+                        className="mr-3 rounded-md p-2 text-muted transition-colors hover:bg-background hover:text-accent"
+                      >
+                        <Star
+                          className={`h-4 w-4 ${watched.has(h.symbol) ? "fill-accent text-accent" : ""}`}
+                        />
+                      </button>
+                    </>
                   )}
                 </li>
               ))}

@@ -5,6 +5,9 @@ export type Quote = {
   change: number;
   changePct: number;
   prevClose: number;
+  open: number;
+  high: number;
+  low: number;
 };
 
 export function hasApiKey() {
@@ -31,7 +34,32 @@ export async function getQuote(symbol: string): Promise<Quote | null> {
     change: q.d ?? 0,
     changePct: q.dp ?? 0,
     prevClose: q.pc || q.c,
+    open: q.o || q.c,
+    high: q.h || q.c,
+    low: q.l || q.c,
   };
+}
+
+/** Recent news about one company (last 14 days), cached 10 minutes. */
+export async function getCompanyNews(symbol: string): Promise<NewsItem[]> {
+  const to = new Date().toISOString().slice(0, 10);
+  const from = new Date(Date.now() - 14 * 86400_000).toISOString().slice(0, 10);
+  const r = (await fh(
+    `/company-news?symbol=${encodeURIComponent(symbol)}&from=${from}&to=${to}`,
+    600
+  )) as NewsItem[] | null;
+  if (!Array.isArray(r)) return [];
+  return r
+    .filter((n) => n.headline && n.url)
+    .slice(0, 5)
+    .map((n) => ({
+      headline: n.headline,
+      source: n.source,
+      url: n.url,
+      image: n.image || "",
+      datetime: n.datetime,
+      summary: n.summary || "",
+    }));
 }
 
 export type Profile = { name: string; marketCapM: number };

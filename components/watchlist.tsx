@@ -21,11 +21,13 @@ export function Watchlist({ items }: { items: WatchItem[] }) {
                 key={w.id}
                 className="flex items-center gap-3 border-b border-line py-3.5 last:border-b-0"
               >
-                <BrandLogo ticker={w.ticker} size={36} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold">{w.ticker}</p>
-                  <p className="truncate text-xs text-muted">{w.name}</p>
-                </div>
+                <a href={`/stock/${w.ticker}`} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
+                  <BrandLogo ticker={w.ticker} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold">{w.ticker}</p>
+                    <p className="truncate text-xs text-muted">{w.name}</p>
+                  </div>
+                </a>
                 {w.changePct !== null && (
                   <span
                     className={`flex items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold ${

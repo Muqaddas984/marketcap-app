@@ -74,13 +74,13 @@ export function StockTable({ rows, editable = false }: { rows: StockRow[]; edita
               return (
                 <tr key={s.ticker} className="border-b border-line last:border-b-0">
                   <td className="py-4">
-                    <div className="flex items-center gap-3">
+                    <a href={`/stock/${s.ticker}`} className="flex items-center gap-3 hover:opacity-80">
                       <BrandLogo ticker={s.ticker} size={36} />
                       <div>
                         <p className="font-bold">{s.ticker}</p>
                         <p className="text-xs text-muted">{s.name}</p>
                       </div>
-                    </div>
+                    </a>
                   </td>
                   <td className="py-4 font-medium">{s.investDate}</td>
                   <td className="py-4 font-medium">{compactCap(s.marketCapM)}</td>
