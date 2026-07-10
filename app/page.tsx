@@ -7,8 +7,10 @@ import { PortfolioValues } from "@/components/portfolio-values";
 import { StatisticsChart } from "@/components/statistics-chart";
 import { StockTable } from "@/components/stock-table";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { NewsFeed } from "@/components/news-feed";
+import { Watchlist } from "@/components/watchlist";
 import { getDashboardData } from "@/lib/market";
-import { getUserPortfolio } from "@/lib/user-data";
+import { getUserPortfolio, getWatchlistData, getHistory, saveSnapshot } from "@/lib/user-data";
 import { supabaseConfigured } from "@/lib/supabase/server";
 
 export default async function Home({
@@ -19,6 +21,13 @@ export default async function Home({
   const { error } = await searchParams;
   const { email, holdings, isDemo } = await getUserPortfolio();
   const { rows, portfolio, live } = await getDashboardData(holdings);
+
+  let watchItems: Awaited<ReturnType<typeof getWatchlistData>> = [];
+  let history: Awaited<ReturnType<typeof getHistory>> = [];
+  if (!isDemo) {
+    await saveSnapshot(portfolio.total);
+    [watchItems, history] = await Promise.all([getWatchlistData(), getHistory()]);
+  }
 
   return (
     <div className="min-h-screen">
@@ -55,9 +64,15 @@ export default async function Home({
             changePct={portfolio.changePct}
             rows={rows}
           />
-          <StatisticsChart />
+          <StatisticsChart history={history} />
         </div>
         <StockTable rows={rows} editable={!isDemo} />
+        <div className="grid gap-5 lg:grid-cols-2">
+          {!isDemo && <Watchlist items={watchItems} />}
+          <div className={isDemo ? "lg:col-span-2" : ""}>
+            <NewsFeed />
+          </div>
+        </div>
         <AutoRefresh seconds={60} />
       </main>
     </div>

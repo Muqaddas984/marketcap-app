@@ -55,6 +55,21 @@ export async function deleteHolding(id: string) {
   revalidatePath("/");
 }
 
+export async function addToWatchlist(ticker: string, name: string) {
+  const { supabase, user } = await requireUser();
+  if (!/^[A-Z.]{1,10}$/.test(ticker)) return;
+  await supabase
+    .from("watchlist")
+    .upsert({ user_id: user.id, ticker, name }, { onConflict: "user_id,ticker" });
+  revalidatePath("/");
+}
+
+export async function removeFromWatchlist(id: string) {
+  const { supabase } = await requireUser();
+  await supabase.from("watchlist").delete().eq("id", id);
+  revalidatePath("/");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   if (supabase) await supabase.auth.signOut();

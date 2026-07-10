@@ -51,6 +51,32 @@ export async function getMarketCap(symbol: string): Promise<number | null> {
   return p?.marketCapM || null;
 }
 
+export type NewsItem = {
+  headline: string;
+  source: string;
+  url: string;
+  image: string;
+  datetime: number;
+  summary: string;
+};
+
+/** Latest general market news, cached 5 minutes. */
+export async function getMarketNews(): Promise<NewsItem[]> {
+  const r = (await fh(`/news?category=general`, 300)) as NewsItem[] | null;
+  if (!Array.isArray(r)) return [];
+  return r
+    .filter((n) => n.headline && n.url)
+    .slice(0, 6)
+    .map((n) => ({
+      headline: n.headline,
+      source: n.source,
+      url: n.url,
+      image: n.image || "",
+      datetime: n.datetime,
+      summary: n.summary || "",
+    }));
+}
+
 export type SearchHit = { symbol: string; name: string };
 
 /** Search stocks by ticker or company name, US common stocks first. */
