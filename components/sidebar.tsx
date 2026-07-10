@@ -15,12 +15,12 @@ import { signOut } from "@/app/actions";
 import { ThemeToggle } from "./theme-toggle";
 
 const mainNav = [
-  { label: "Overview", icon: House },
-  { label: "My Stock", icon: LayoutGrid },
-  { label: "Portfolio", icon: ChartColumnBig, active: true },
-  { label: "Analytic", icon: ChartNoAxesColumn },
-  { label: "Community", icon: Globe },
-  { label: "Account", icon: Users },
+  { label: "Overview", icon: House, href: "/" },
+  { label: "My Stock", icon: LayoutGrid, href: "/#my-stock" },
+  { label: "Portfolio", icon: ChartColumnBig, href: "/", active: true },
+  { label: "Analytic", icon: ChartNoAxesColumn, soon: true },
+  { label: "Community", icon: Globe, soon: true },
+  { label: "Account", icon: Users, soon: true },
 ];
 
 const files = ["Communication", "Affiliates", "Marketing"];
@@ -39,18 +39,26 @@ export function Sidebar({ email }: { email: string | null }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {mainNav.map(({ label, icon: Icon, active }) => (
+        {mainNav.map(({ label, icon: Icon, active, href, soon }) => (
           <a
             key={label}
-            href="#"
+            href={href ?? "#"}
+            title={soon ? "Coming soon" : undefined}
             className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
               active
                 ? "bg-background font-semibold text-ink"
-                : "text-muted hover:bg-background hover:text-ink"
+                : soon
+                  ? "cursor-default text-muted/60"
+                  : "text-muted hover:bg-background hover:text-ink"
             }`}
           >
             <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.2 : 1.8} />
             {label}
+            {soon && (
+              <span className="ml-auto rounded-full bg-background px-2 py-0.5 text-[10px] font-semibold text-muted">
+                Soon
+              </span>
+            )}
           </a>
         ))}
       </nav>

@@ -51,7 +51,7 @@ export default async function Home({
             total={portfolio.total}
             profit={portfolio.profit}
             changePct={portfolio.changePct}
-            holdingsCount={rows.length}
+            rows={rows}
           />
           <StatisticsChart />
         </div>

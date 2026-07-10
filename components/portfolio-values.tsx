@@ -1,19 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronRight, EllipsisVertical, Sparkles } from "lucide-react";
 import { money } from "@/lib/data";
+import type { StockRow } from "@/lib/market";
+import { BrandLogo } from "./brand-logo";
 
 export function PortfolioValues({
   total,
   profit,
   changePct,
-  holdingsCount,
+  rows,
 }: {
   total: number;
   profit: number;
   changePct: number;
-  holdingsCount: number;
+  rows: StockRow[];
 }) {
+  const [view, setView] = useState<"top" | "worst" | null>(null);
   const up = changePct >= 0;
   const gained = profit >= 0;
+
+  const sorted = [...rows].sort((a, b) => b.changePct - a.changePct);
+  const picked =
+    view === "top" ? sorted[0] : view === "worst" ? sorted[sorted.length - 1] : null;
+
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
       <div className="flex items-start justify-between">
@@ -40,27 +51,71 @@ export function PortfolioValues({
         <span className={`font-semibold ${gained ? "text-ink" : "text-negative"}`}>
           {money(Math.abs(profit))}
         </span>{" "}
-        across your {holdingsCount} holdings.
+        across your {rows.length} holdings.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-3">
-        <button className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-background">
+        <button
+          onClick={() => setView(view === "worst" ? null : "worst")}
+          className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
+            view === "worst"
+              ? "bg-negative text-white"
+              : "border border-line text-ink hover:bg-background"
+          }`}
+        >
           Worst Performance
         </button>
-        <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+        <button
+          onClick={() => setView(view === "top" ? null : "top")}
+          className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
+            view === "top"
+              ? "bg-accent text-white"
+              : "border border-line text-ink hover:bg-background"
+          }`}
+        >
           Top Performance
         </button>
       </div>
 
+      {view && !picked && (
+        <p className="mt-4 rounded-xl bg-background p-3 text-sm text-muted">
+          No holdings yet — add a stock to see your {view === "top" ? "best" : "worst"} performer.
+        </p>
+      )}
+      {picked && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl bg-background p-3">
+          <BrandLogo ticker={picked.ticker} size={36} />
+          <div className="min-w-0">
+            <p className="text-sm font-bold">{picked.ticker}</p>
+            <p className="truncate text-xs text-muted">{picked.name}</p>
+          </div>
+          <span
+            className={`ml-auto flex items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+              picked.changePct >= 0
+                ? "bg-positive-soft text-positive"
+                : "bg-negative-soft text-negative"
+            }`}
+          >
+            {picked.changePct >= 0 ? (
+              <ArrowUp className="h-3.5 w-3.5" />
+            ) : (
+              <ArrowDown className="h-3.5 w-3.5" />
+            )}
+            {Math.abs(picked.changePct).toFixed(2)}%
+          </span>
+          <span className="text-sm font-semibold">{money(picked.value)}</span>
+        </div>
+      )}
+
       <a
-        href="#"
+        href="#my-stock"
         className="mt-auto flex items-center gap-3 rounded-2xl bg-accent-soft p-4 pt-4"
       >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card">
           <Sparkles className="h-4 w-4 text-accent" />
         </span>
         <span className="text-sm font-medium leading-snug text-accent">
-          Here&apos;s how to improve your portfolio and understand how investing works.
+          Track your investments below — add holdings to see live profit and loss.
         </span>
         <ChevronRight className="ml-auto h-5 w-5 shrink-0 text-accent" />
       </a>

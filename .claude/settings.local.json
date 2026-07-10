@@ -19,7 +19,8 @@
       "mcp__2ed1164b-cfd4-4a20-b9a7-d8328ccb3e9b__get_publishable_keys",
       "Bash(python -c ' *)",
       "mcp__2ed1164b-cfd4-4a20-b9a7-d8328ccb3e9b__list_tables",
-      "Bash(git commit -m 'Add Supabase user accounts with per-user portfolios *)"
+      "Bash(git commit -m 'Add Supabase user accounts with per-user portfolios *)",
+      "mcp__2ed1164b-cfd4-4a20-b9a7-d8328ccb3e9b__execute_sql"
     ]
   }
 }
