@@ -31,7 +31,12 @@ function ChartTooltip({
 export function StatisticsChart() {
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
-      <h2 className="text-lg font-bold">Statistics</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold">Statistics</h2>
+        <span className="rounded-full bg-background px-2.5 py-1 text-[10px] font-semibold text-muted">
+          Demo data
+        </span>
+      </div>
       <div className="mt-4 h-64 min-h-64 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>

@@ -20,7 +20,7 @@ const mainNav = [
   { label: "Portfolio", icon: ChartColumnBig, href: "/", active: true },
   { label: "Analytic", icon: ChartNoAxesColumn, soon: true },
   { label: "Community", icon: Globe, soon: true },
-  { label: "Account", icon: Users, soon: true },
+  { label: "Account", icon: Users, href: "/account" },
 ];
 
 const files = ["Communication", "Affiliates", "Marketing"];
@@ -77,7 +77,8 @@ export function Sidebar({ email }: { email: string | null }) {
           <a
             key={label}
             href="#"
-            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted hover:bg-background hover:text-ink"
+            title="Coming soon"
+            className="flex cursor-default items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted/60"
           >
             <Folder className="h-[18px] w-[18px]" strokeWidth={1.8} />
             {label}
