@@ -80,7 +80,18 @@ export async function buyStock(formData: FormData) {
   }
   if (dbError) redirect(`${back}?error=${encodeURIComponent(dbError)}`);
 
-  await supabase.from("profiles").update({ cash: cash - cost }).eq("user_id", user.id);
+  await Promise.all([
+    supabase.from("profiles").update({ cash: cash - cost }).eq("user_id", user.id),
+    supabase.from("trades").insert({
+      user_id: user.id,
+      kind: "buy",
+      ticker,
+      name: profile?.name ?? ticker,
+      shares,
+      price,
+      total: cost,
+    }),
+  ]);
 
   revalidatePath("/", "layout");
   redirect(
@@ -140,7 +151,19 @@ export async function sellHolding(formData: FormData) {
   // Sale proceeds go back into virtual cash.
   const proceeds = sellPrice * sharesToSell;
   const cash = await getCash(supabase, user.id);
-  await supabase.from("profiles").update({ cash: cash + proceeds }).eq("user_id", user.id);
+  await Promise.all([
+    supabase.from("profiles").update({ cash: cash + proceeds }).eq("user_id", user.id),
+    supabase.from("trades").insert({
+      user_id: user.id,
+      kind: "sell",
+      ticker: holding.ticker,
+      name: holding.name,
+      shares: sharesToSell,
+      price: sellPrice,
+      total: proceeds,
+      profit,
+    }),
+  ]);
 
   revalidatePath("/", "layout");
   const sign = profit >= 0 ? "profit" : "loss";

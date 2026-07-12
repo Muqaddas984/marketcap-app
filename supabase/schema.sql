@@ -41,6 +41,19 @@ create table if not exists public.sales (
   sold_at timestamptz not null default now()
 );
 
+create table if not exists public.trades (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  kind text not null check (kind in ('buy', 'sell')),
+  ticker text not null,
+  name text not null,
+  shares numeric not null check (shares > 0),
+  price numeric not null,
+  total numeric not null,
+  profit numeric,
+  created_at timestamptz not null default now()
+);
+
 -- Virtual trading cash: every user starts with $100,000 of paper money.
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -80,5 +93,12 @@ alter table public.profiles enable row level security;
 
 create policy "Users manage own profile"
   on public.profiles for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+alter table public.trades enable row level security;
+
+create policy "Users manage own trades"
+  on public.trades for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
