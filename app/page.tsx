@@ -7,9 +7,11 @@ import { PortfolioValues } from "@/components/portfolio-values";
 import { StatisticsChart } from "@/components/statistics-chart";
 import { StockTable } from "@/components/stock-table";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { MarketMovers } from "@/components/market-movers";
 import { NewsFeed } from "@/components/news-feed";
 import { Watchlist } from "@/components/watchlist";
 import { getDashboardData } from "@/lib/market";
+import { getMovers } from "@/lib/movers";
 import {
   getUserPortfolio,
   getWatchlistData,
@@ -25,7 +27,12 @@ export default async function Home({
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { error, message } = await searchParams;
-  const { email, holdings, cash, isDemo } = await getUserPortfolio();
+  const [{ email, holdings, cash, isDemo }, gainers, losers, actives] = await Promise.all([
+    getUserPortfolio(),
+    getMovers("day_gainers"),
+    getMovers("day_losers"),
+    getMovers("most_actives"),
+  ]);
   const { rows, portfolio, live } = await getDashboardData(holdings);
   const accountValue = cash + portfolio.total;
 
@@ -85,6 +92,7 @@ export default async function Home({
           />
           <StatisticsChart history={history} />
         </div>
+        <MarketMovers gainers={gainers} losers={losers} active={actives} />
         <StockTable rows={rows} editable={!isDemo} />
         <div className="grid gap-5 lg:grid-cols-2">
           {!isDemo && <Watchlist items={watchItems} />}
