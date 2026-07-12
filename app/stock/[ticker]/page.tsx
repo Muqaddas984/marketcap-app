@@ -3,11 +3,10 @@ import { notFound } from "next/navigation";
 import { ArrowDown, ArrowUp, CircleAlert, CircleCheck } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { BrandLogo } from "@/components/brand-logo";
-import { PriceChart } from "@/components/price-chart";
+import { AdvancedChart } from "@/components/advanced-chart";
 import { WatchButton } from "@/components/watch-button";
 import { addHolding, sellHolding } from "@/app/actions";
 import { getQuote, getProfile, getCompanyNews } from "@/lib/finnhub";
-import { getDailyHistory } from "@/lib/price-history";
 import { getUserPortfolio, getWatchRowId } from "@/lib/user-data";
 import { money, compactCap } from "@/lib/data";
 
@@ -36,15 +35,13 @@ export default async function StockPage({
   if (!/^[A-Z.]{1,10}$/.test(ticker)) notFound();
   const { error, message } = await searchParams;
 
-  const [quote, profile, history, news, { email, holdings, isDemo }, watchId] =
-    await Promise.all([
-      getQuote(ticker),
-      getProfile(ticker),
-      getDailyHistory(ticker),
-      getCompanyNews(ticker),
-      getUserPortfolio(),
-      getWatchRowId(ticker),
-    ]);
+  const [quote, profile, news, { email, holdings, isDemo }, watchId] = await Promise.all([
+    getQuote(ticker),
+    getProfile(ticker),
+    getCompanyNews(ticker),
+    getUserPortfolio(),
+    getWatchRowId(ticker),
+  ]);
 
   if (!quote) notFound();
 
@@ -103,16 +100,9 @@ export default async function StockPage({
             </span>
           </div>
 
-          {history.length >= 2 ? (
-            <div className="mt-6">
-              <PriceChart data={history} />
-              <p className="mt-2 text-right text-xs text-muted">Last 3 months, daily close</p>
-            </div>
-          ) : (
-            <p className="mt-6 rounded-xl bg-background p-4 text-sm text-muted">
-              No price history available for this symbol.
-            </p>
-          )}
+          <div className="mt-6">
+            <AdvancedChart symbol={ticker} />
+          </div>
 
           <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-5 sm:grid-cols-5">
             {stats.map(([label, value]) => (
