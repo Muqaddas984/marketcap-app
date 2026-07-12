@@ -6,10 +6,11 @@ import {
   ColorType,
   AreaSeries,
   CandlestickSeries,
+  type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
 import { Loader2 } from "lucide-react";
-import { CHART_RANGES, type Candle, type ChartRange } from "@/lib/price-history";
+import { CHART_INTERVALS, INTERVAL_META, type Candle, type ChartInterval } from "@/lib/price-history";
 
 const UP = "#16a34a";
 const DOWN = "#e11d48";
@@ -18,20 +19,41 @@ function cssVar(name: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
+function toSeriesData(candles: Candle[], mode: "line" | "candles") {
+  return mode === "candles"
+    ? candles.map((c) => ({
+        time: c.time as UTCTimestamp,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      }))
+    : candles.map((c) => ({ time: c.time as UTCTimestamp, value: c.close }));
+}
+
 export function AdvancedChart({ symbol }: { symbol: string }) {
-  const [range, setRange] = useState<ChartRange>("1M");
-  const [mode, setMode] = useState<"line" | "candles">("line");
+  const [interval, setInterval_] = useState<ChartInterval>("15m");
+  const [mode, setMode] = useState<"line" | "candles">("candles");
   const [candles, setCandles] = useState<Candle[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const seriesRef = useRef<ISeriesApi<"Area"> | ISeriesApi<"Candlestick"> | null>(null);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
+  // Initial load whenever symbol or interval changes.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch(`/api/history?symbol=${encodeURIComponent(symbol)}&range=${range}`)
+    setCandles(null);
+    fetch(`/api/history?symbol=${encodeURIComponent(symbol)}&interval=${interval}`)
       .then((r) => r.json())
       .then((d) => {
-        if (!cancelled) setCandles(d.candles ?? []);
+        if (!cancelled) {
+          setCandles(d.candles ?? []);
+          setLastUpdate(new Date());
+        }
       })
       .catch(() => {
         if (!cancelled) setCandles([]);
@@ -42,14 +64,35 @@ export function AdvancedChart({ symbol }: { symbol: string }) {
     return () => {
       cancelled = true;
     };
-  }, [symbol, range]);
+  }, [symbol, interval]);
 
+  // Live refresh: silently refetch and update the series in place so the
+  // chart stays put (zoom/pan preserved) while the newest candle moves.
+  useEffect(() => {
+    const id = window.setInterval(async () => {
+      try {
+        const r = await fetch(`/api/history?symbol=${encodeURIComponent(symbol)}&interval=${interval}`);
+        const d = await r.json();
+        if (Array.isArray(d.candles) && d.candles.length && seriesRef.current) {
+          seriesRef.current.setData(
+            toSeriesData(d.candles, modeRef.current) as never[]
+          );
+          setLastUpdate(new Date());
+        }
+      } catch {
+        // transient network failure — keep the current chart
+      }
+    }, INTERVAL_META[interval].refreshMs);
+    return () => window.clearInterval(id);
+  }, [symbol, interval]);
+
+  // Build the chart whenever the data set or mode changes.
   useEffect(() => {
     if (!containerRef.current || !candles || candles.length < 2) return;
 
     const up = candles[candles.length - 1].close >= candles[0].close;
     const trend = up ? UP : DOWN;
-    const intraday = range === "1D" || range === "5D";
+    const intraday = ["5m", "15m", "30m", "1H"].includes(interval);
 
     const chart = createChart(containerRef.current, {
       autoSize: true,
@@ -74,67 +117,69 @@ export function AdvancedChart({ symbol }: { symbol: string }) {
       },
     });
 
-    if (mode === "candles") {
-      const series = chart.addSeries(CandlestickSeries, {
-        upColor: UP,
-        downColor: DOWN,
-        wickUpColor: UP,
-        wickDownColor: DOWN,
-        borderVisible: false,
-      });
-      series.setData(
-        candles.map((c) => ({
-          time: c.time as UTCTimestamp,
-          open: c.open,
-          high: c.high,
-          low: c.low,
-          close: c.close,
-        }))
-      );
-    } else {
-      const series = chart.addSeries(AreaSeries, {
-        lineColor: trend,
-        lineWidth: 2,
-        topColor: up ? "rgba(22, 163, 74, 0.25)" : "rgba(225, 29, 72, 0.25)",
-        bottomColor: "rgba(0, 0, 0, 0)",
-      });
-      series.setData(
-        candles.map((c) => ({ time: c.time as UTCTimestamp, value: c.close }))
-      );
-    }
+    const series =
+      mode === "candles"
+        ? chart.addSeries(CandlestickSeries, {
+            upColor: UP,
+            downColor: DOWN,
+            wickUpColor: UP,
+            wickDownColor: DOWN,
+            borderVisible: false,
+          })
+        : chart.addSeries(AreaSeries, {
+            lineColor: trend,
+            lineWidth: 2,
+            topColor: up ? "rgba(22, 163, 74, 0.25)" : "rgba(225, 29, 72, 0.25)",
+            bottomColor: "rgba(0, 0, 0, 0)",
+          });
+    series.setData(toSeriesData(candles, mode) as never[]);
+    seriesRef.current = series;
 
     chart.timeScale().fitContent();
-    return () => chart.remove();
-  }, [candles, mode, range]);
+    return () => {
+      seriesRef.current = null;
+      chart.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candles, mode]);
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex rounded-full bg-background p-1">
-          {CHART_RANGES.map((r) => (
+          {CHART_INTERVALS.map((iv) => (
             <button
-              key={r}
-              onClick={() => setRange(r)}
+              key={iv}
+              onClick={() => setInterval_(iv)}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                range === r ? "bg-card shadow-sm" : "text-muted hover:text-ink"
+                interval === iv ? "bg-card shadow-sm" : "text-muted hover:text-ink"
               }`}
             >
-              {r}
+              {iv}
             </button>
           ))}
         </div>
-        <div className="flex rounded-full bg-background p-1">
-          {(["line", "candles"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
-                mode === m ? "bg-card shadow-sm" : "text-muted hover:text-ink"
-              }`}
-            >
-              {m}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 text-[11px] font-semibold text-positive">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-positive" />
+            </span>
+            LIVE
+          </span>
+          <div className="flex rounded-full bg-background p-1">
+            {(["line", "candles"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                  mode === m ? "bg-card shadow-sm" : "text-muted hover:text-ink"
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -146,22 +191,19 @@ export function AdvancedChart({ symbol }: { symbol: string }) {
         )}
         {!loading && candles && candles.length < 2 ? (
           <div className="flex h-full items-center justify-center rounded-xl bg-background text-sm text-muted">
-            No price history available for this range.
+            No price history available for this interval.
           </div>
         ) : (
           <div ref={containerRef} className="h-full w-full" />
         )}
       </div>
-      <p className="mt-2 text-right text-xs text-muted">
-        {range === "1D"
-          ? "5-minute candles, today"
-          : range === "5D"
-            ? "15-minute candles, last 5 days"
-            : range === "1Y"
-              ? "Weekly candles, last year"
-              : range === "5Y"
-                ? "Monthly candles, last 5 years"
-                : `Daily candles, last ${range === "1M" ? "month" : "6 months"}`}
+      <p className="mt-2 flex items-center justify-between text-xs text-muted">
+        <span>
+          {lastUpdate
+            ? `Updated ${lastUpdate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+            : ""}
+        </span>
+        <span>{INTERVAL_META[interval].label}</span>
       </p>
     </div>
   );
