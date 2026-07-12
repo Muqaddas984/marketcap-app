@@ -10,7 +10,13 @@ import { AutoRefresh } from "@/components/auto-refresh";
 import { NewsFeed } from "@/components/news-feed";
 import { Watchlist } from "@/components/watchlist";
 import { getDashboardData } from "@/lib/market";
-import { getUserPortfolio, getWatchlistData, getHistory, saveSnapshot } from "@/lib/user-data";
+import {
+  getUserPortfolio,
+  getWatchlistData,
+  getHistory,
+  getRealizedProfit,
+  saveSnapshot,
+} from "@/lib/user-data";
 import { supabaseConfigured } from "@/lib/supabase/server";
 
 export default async function Home({
@@ -24,9 +30,14 @@ export default async function Home({
 
   let watchItems: Awaited<ReturnType<typeof getWatchlistData>> = [];
   let history: Awaited<ReturnType<typeof getHistory>> = [];
+  let realized = 0;
   if (!isDemo) {
     await saveSnapshot(portfolio.total);
-    [watchItems, history] = await Promise.all([getWatchlistData(), getHistory()]);
+    [watchItems, history, realized] = await Promise.all([
+      getWatchlistData(),
+      getHistory(),
+      getRealizedProfit(),
+    ]);
   }
 
   return (
@@ -63,6 +74,7 @@ export default async function Home({
             profit={portfolio.profit}
             changePct={portfolio.changePct}
             rows={rows}
+            realized={realized}
           />
           <StatisticsChart history={history} />
         </div>

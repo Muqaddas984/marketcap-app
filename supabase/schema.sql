@@ -29,6 +29,18 @@ create table if not exists public.portfolio_history (
   primary key (user_id, snap_date)
 );
 
+create table if not exists public.sales (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  ticker text not null,
+  name text not null,
+  shares numeric not null check (shares > 0),
+  buy_price numeric not null,
+  sell_price numeric not null,
+  profit numeric not null,
+  sold_at timestamptz not null default now()
+);
+
 -- Row Level Security: each user can only see and modify their own rows.
 alter table public.holdings enable row level security;
 alter table public.watchlist enable row level security;
@@ -47,5 +59,12 @@ alter table public.portfolio_history enable row level security;
 
 create policy "Users manage own history"
   on public.portfolio_history for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+alter table public.sales enable row level security;
+
+create policy "Users manage own sales"
+  on public.sales for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

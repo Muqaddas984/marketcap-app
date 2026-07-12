@@ -54,6 +54,63 @@ export async function addHolding(formData: FormData) {
   redirect(back);
 }
 
+export async function sellHolding(formData: FormData) {
+  const { supabase, user } = await requireUser();
+
+  const id = String(formData.get("id") ?? "");
+  const sharesToSell = Number(formData.get("shares"));
+  const priceRaw = String(formData.get("sellPrice") ?? "").trim();
+  const backRaw = String(formData.get("redirectTo") ?? "/");
+  const back = backRaw.startsWith("/") ? backRaw : "/";
+
+  const { data: holding } = await supabase
+    .from("holdings")
+    .select("id, ticker, name, shares, buy_price")
+    .eq("id", id)
+    .maybeSingle();
+  if (!holding) redirect(`${back}?error=Holding not found`);
+
+  const owned = Number(holding.shares);
+  if (!Number.isFinite(sharesToSell) || sharesToSell <= 0)
+    redirect(`${back}?error=Shares to sell must be a positive number`);
+  if (sharesToSell > owned + 1e-9)
+    redirect(`${back}?error=You only own ${owned} shares of ${holding.ticker}`);
+
+  const quote = await getQuote(holding.ticker as string);
+  const sellPrice = priceRaw ? Number(priceRaw) : quote?.price;
+  if (!sellPrice || !Number.isFinite(sellPrice) || sellPrice <= 0)
+    redirect(`${back}?error=Could not determine a sell price for ${holding.ticker}`);
+
+  const buyPrice = Number(holding.buy_price);
+  const profit = (sellPrice - buyPrice) * sharesToSell;
+
+  const { error } = await supabase.from("sales").insert({
+    user_id: user.id,
+    ticker: holding.ticker,
+    name: holding.name,
+    shares: sharesToSell,
+    buy_price: buyPrice,
+    sell_price: sellPrice,
+    profit,
+  });
+  if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}`);
+
+  const remaining = owned - sharesToSell;
+  if (remaining > 1e-9) {
+    await supabase.from("holdings").update({ shares: remaining }).eq("id", id);
+  } else {
+    await supabase.from("holdings").delete().eq("id", id);
+  }
+
+  revalidatePath("/", "layout");
+  const sign = profit >= 0 ? "profit" : "loss";
+  redirect(
+    `${back}?message=${encodeURIComponent(
+      `Sold ${sharesToSell} ${holding.ticker} at $${sellPrice.toFixed(2)} — ${sign} $${Math.abs(profit).toFixed(2)}`
+    )}`
+  );
+}
+
 export async function deleteHolding(id: string) {
   const { supabase } = await requireUser();
   await supabase.from("holdings").delete().eq("id", id);

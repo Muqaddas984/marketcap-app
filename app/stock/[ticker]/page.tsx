@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowDown, ArrowUp, CircleAlert } from "lucide-react";
+import { ArrowDown, ArrowUp, CircleAlert, CircleCheck } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { BrandLogo } from "@/components/brand-logo";
 import { PriceChart } from "@/components/price-chart";
 import { WatchButton } from "@/components/watch-button";
-import { addHolding } from "@/app/actions";
+import { addHolding, sellHolding } from "@/app/actions";
 import { getQuote, getProfile, getCompanyNews } from "@/lib/finnhub";
 import { getDailyHistory } from "@/lib/price-history";
 import { getUserPortfolio, getWatchRowId } from "@/lib/user-data";
@@ -29,12 +29,12 @@ export default async function StockPage({
   searchParams,
 }: {
   params: Promise<{ ticker: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { ticker: raw } = await params;
   const ticker = raw.toUpperCase();
   if (!/^[A-Z.]{1,10}$/.test(ticker)) notFound();
-  const { error } = await searchParams;
+  const { error, message } = await searchParams;
 
   const [quote, profile, history, news, { email, holdings, isDemo }, watchId] =
     await Promise.all([
@@ -72,6 +72,12 @@ export default async function StockPage({
           <p className="flex items-center gap-2 rounded-xl bg-negative-soft px-4 py-2.5 text-xs font-medium text-negative">
             <CircleAlert className="h-4 w-4 shrink-0" />
             {error}
+          </p>
+        )}
+        {message && (
+          <p className="flex items-center gap-2 rounded-xl bg-positive-soft px-4 py-2.5 text-xs font-medium text-positive">
+            <CircleCheck className="h-4 w-4 shrink-0" />
+            {message}
           </p>
         )}
 
@@ -171,6 +177,46 @@ export default async function StockPage({
                   Recorded at the live price unless you set your own buy price. This tracks your
                   portfolio — it does not place a real trade.
                 </p>
+                {owned && (
+                  <div id="sell" className="mt-5 scroll-mt-6 border-t border-line pt-5">
+                    <h3 className="text-sm font-bold">Sell shares</h3>
+                    <form action={sellHolding} className="mt-3 flex flex-wrap items-end gap-3">
+                      <input type="hidden" name="id" value={owned.id} />
+                      <input type="hidden" name="redirectTo" value={`/stock/${ticker}`} />
+                      <label className="flex flex-col gap-1 text-xs font-semibold">
+                        Shares (you own {owned.shares})
+                        <input
+                          name="shares"
+                          type="number"
+                          step="any"
+                          min="0.0001"
+                          max={owned.shares}
+                          required
+                          placeholder={String(owned.shares)}
+                          className="w-36 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-xs font-semibold">
+                        Sell price (optional)
+                        <input
+                          name="sellPrice"
+                          type="number"
+                          step="any"
+                          min="0"
+                          placeholder={money(quote.price)}
+                          className="w-32 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
+                        />
+                      </label>
+                      <button className="rounded-full bg-negative px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                        Sell
+                      </button>
+                    </form>
+                    <p className="mt-3 text-xs text-muted">
+                      Sells at the live price unless you set your own. Your realized profit or
+                      loss is recorded and shown on the dashboard.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </div>

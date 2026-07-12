@@ -11,11 +11,13 @@ export function PortfolioValues({
   profit,
   changePct,
   rows,
+  realized = 0,
 }: {
   total: number;
   profit: number;
   changePct: number;
   rows: StockRow[];
+  realized?: number;
 }) {
   const [view, setView] = useState<"top" | "worst" | null>(null);
   const up = changePct >= 0;
@@ -47,6 +49,16 @@ export function PortfolioValues({
           {money(Math.abs(profit))}
         </span>{" "}
         across your {rows.length} holdings.
+        {realized !== 0 && (
+          <>
+            {" "}
+            Realized {realized >= 0 ? "profit" : "loss"} from sales:{" "}
+            <span className={`font-semibold ${realized >= 0 ? "text-positive" : "text-negative"}`}>
+              {money(Math.abs(realized))}
+            </span>
+            .
+          </>
+        )}
       </p>
 
       <div className="mt-5 flex flex-wrap gap-3">

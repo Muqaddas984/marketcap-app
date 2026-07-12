@@ -69,6 +69,18 @@ export async function getWatchRowId(ticker: string): Promise<string | null> {
   return (data?.id as string) ?? null;
 }
 
+/** Total realized profit/loss from all past sales (0 when none or signed out). */
+export async function getRealizedProfit(): Promise<number> {
+  const supabase = await createClient();
+  if (!supabase) return 0;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 0;
+  const { data } = await supabase.from("sales").select("profit");
+  return (data ?? []).reduce((s, r) => s + Number(r.profit), 0);
+}
+
 export type HistoryPoint = { date: string; value: number };
 
 /** Upsert today's portfolio total so the history chart accumulates one point per day. */
