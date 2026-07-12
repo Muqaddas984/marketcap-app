@@ -28,7 +28,9 @@ export default async function LoginPage({
 
         <h1 className="text-2xl font-bold">Welcome back</h1>
         <p className="mt-1 text-sm text-muted">
-          Sign in to track your own portfolio, or create an account.
+          Sign in to your trading account — or create one and get{" "}
+          <span className="font-semibold text-ink">$100,000 in virtual cash</span> to practice
+          trading real stocks, risk-free.
         </p>
 
         {!configured && (

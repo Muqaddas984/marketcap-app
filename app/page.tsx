@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CircleAlert, TriangleAlert } from "lucide-react";
+import { CircleAlert, CircleCheck, TriangleAlert } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { StockCards } from "@/components/stock-cards";
 import { StockSearch } from "@/components/stock-search";
@@ -22,17 +22,18 @@ import { supabaseConfigured } from "@/lib/supabase/server";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
-  const { error } = await searchParams;
-  const { email, holdings, isDemo } = await getUserPortfolio();
+  const { error, message } = await searchParams;
+  const { email, holdings, cash, isDemo } = await getUserPortfolio();
   const { rows, portfolio, live } = await getDashboardData(holdings);
+  const accountValue = cash + portfolio.total;
 
   let watchItems: Awaited<ReturnType<typeof getWatchlistData>> = [];
   let history: Awaited<ReturnType<typeof getHistory>> = [];
   let realized = 0;
   if (!isDemo) {
-    await saveSnapshot(portfolio.total);
+    await saveSnapshot(accountValue);
     [watchItems, history, realized] = await Promise.all([
       getWatchlistData(),
       getHistory(),
@@ -48,6 +49,12 @@ export default async function Home({
           <p className="flex items-center gap-2 rounded-xl bg-negative-soft px-4 py-2.5 text-xs font-medium text-negative">
             <CircleAlert className="h-4 w-4 shrink-0" />
             {error}
+          </p>
+        )}
+        {message && (
+          <p className="flex items-center gap-2 rounded-xl bg-positive-soft px-4 py-2.5 text-xs font-medium text-positive">
+            <CircleCheck className="h-4 w-4 shrink-0" />
+            {message}
           </p>
         )}
         {!live && (
@@ -71,7 +78,7 @@ export default async function Home({
         <div className="grid gap-5 lg:grid-cols-[5fr_6fr]">
           <PortfolioValues
             total={portfolio.total}
-            profit={portfolio.profit}
+            cash={cash}
             changePct={portfolio.changePct}
             rows={rows}
             realized={realized}

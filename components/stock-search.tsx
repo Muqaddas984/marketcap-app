@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, Search, Star } from "lucide-react";
-import { addHolding, addToWatchlist } from "@/app/actions";
+import { buyStock, addToWatchlist } from "@/app/actions";
 import type { SearchHit } from "@/lib/finnhub";
 
 export function StockSearch({ editable }: { editable: boolean }) {
@@ -73,7 +73,7 @@ export function StockSearch({ editable }: { editable: boolean }) {
       {open && (hits.length > 0 || picked) && (
         <div className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-line bg-card shadow-xl">
           {picked ? (
-            <form action={addHolding} className="flex flex-wrap items-center gap-3 p-4">
+            <form action={buyStock} className="flex flex-wrap items-center gap-3 p-4">
               <input type="hidden" name="ticker" value={picked.symbol} />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">{picked.symbol}</p>

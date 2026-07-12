@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
-import { addHolding } from "@/app/actions";
-
-const inputClass =
-  "rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent";
+import { buyStock } from "@/app/actions";
 
 export function AddHolding() {
   const [open, setOpen] = useState(false);
@@ -16,19 +13,24 @@ export function AddHolding() {
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
       >
-        <Plus className="h-4 w-4" /> Add holding
+        <Plus className="h-4 w-4" /> Buy stock
       </button>
     );
   }
 
   return (
     <form
-      action={addHolding}
+      action={buyStock}
       className="flex flex-wrap items-end gap-3 rounded-2xl bg-background p-4"
     >
       <label className="flex flex-col gap-1 text-xs font-semibold">
         Ticker
-        <input name="ticker" required placeholder="AAPL" className={`${inputClass} w-24 uppercase`} />
+        <input
+          name="ticker"
+          required
+          placeholder="AAPL"
+          className="w-24 rounded-xl border border-line bg-card px-4 py-2.5 text-sm font-normal uppercase outline-none focus:border-accent"
+        />
       </label>
       <label className="flex flex-col gap-1 text-xs font-semibold">
         Shares
@@ -39,26 +41,11 @@ export function AddHolding() {
           min="0.0001"
           required
           placeholder="10"
-          className={`${inputClass} w-24`}
+          className="w-24 rounded-xl border border-line bg-card px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
         />
-      </label>
-      <label className="flex flex-col gap-1 text-xs font-semibold">
-        Buy price (optional)
-        <input
-          name="buyPrice"
-          type="number"
-          step="any"
-          min="0"
-          placeholder="Current price"
-          className={`${inputClass} w-32`}
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs font-semibold">
-        Invest date
-        <input name="investDate" type="date" className={inputClass} />
       </label>
       <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
-        Save
+        Buy at live price
       </button>
       <button
         type="button"

@@ -25,6 +25,10 @@ export const fallbackQuotes: Record<string, { price: number; changePct: number; 
   NVDA: { price: 159.2, changePct: 2.08, marketCapM: 3_890_000 },
 };
 
+/** Demo cash shown to signed-out visitors: $100k minus the demo holdings' cost. */
+export const demoCash =
+  100000 - holdings.reduce((s, h) => s + h.shares * h.buyPrice, 0);
+
 export const chartData = [
   { date: "Dec 1", value: 34200 },
   { date: "Dec 2", value: 38400 },

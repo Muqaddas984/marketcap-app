@@ -8,20 +8,24 @@ import { BrandLogo } from "./brand-logo";
 
 export function PortfolioValues({
   total,
-  profit,
+  cash,
   changePct,
   rows,
   realized = 0,
 }: {
+  /** Market value of all holdings. */
   total: number;
-  profit: number;
+  /** Virtual cash available. */
+  cash: number;
   changePct: number;
   rows: StockRow[];
   realized?: number;
 }) {
   const [view, setView] = useState<"top" | "worst" | null>(null);
   const up = changePct >= 0;
-  const gained = profit >= 0;
+  const accountValue = cash + total;
+  const overall = accountValue - 100000;
+  const gained = overall >= 0;
 
   const sorted = [...rows].sort((a, b) => b.changePct - a.changePct);
   const picked =
@@ -29,10 +33,10 @@ export function PortfolioValues({
 
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
-      <h2 className="text-lg font-bold">Total Value</h2>
+      <h2 className="text-lg font-bold">Account Value</h2>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className="text-4xl font-extrabold tracking-tight">{money(total)}</span>
+        <span className="text-4xl font-extrabold tracking-tight">{money(accountValue)}</span>
         <span
           className={`flex items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
             up ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative"
@@ -43,12 +47,18 @@ export function PortfolioValues({
         </span>
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-muted">
-        Your total {gained ? "profit" : "loss"} is{" "}
-        <span className={`font-semibold ${gained ? "text-ink" : "text-negative"}`}>
-          {money(Math.abs(profit))}
+      <p className="mt-2 text-sm text-muted">
+        Virtual cash <span className="font-semibold text-ink">{money(cash)}</span> · invested{" "}
+        <span className="font-semibold text-ink">{money(total)}</span> in {rows.length}{" "}
+        {rows.length === 1 ? "stock" : "stocks"}
+      </p>
+
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        {gained ? "Up" : "Down"}{" "}
+        <span className={`font-semibold ${gained ? "text-positive" : "text-negative"}`}>
+          {money(Math.abs(overall))}
         </span>{" "}
-        across your {rows.length} holdings.
+        since your $100,000 start.
         {realized !== 0 && (
           <>
             {" "}

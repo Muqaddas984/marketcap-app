@@ -41,6 +41,13 @@ create table if not exists public.sales (
   sold_at timestamptz not null default now()
 );
 
+-- Virtual trading cash: every user starts with $100,000 of paper money.
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  cash numeric not null default 100000 check (cash >= 0),
+  created_at timestamptz not null default now()
+);
+
 -- Row Level Security: each user can only see and modify their own rows.
 alter table public.holdings enable row level security;
 alter table public.watchlist enable row level security;
@@ -66,5 +73,12 @@ alter table public.sales enable row level security;
 
 create policy "Users manage own sales"
   on public.sales for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+alter table public.profiles enable row level security;
+
+create policy "Users manage own profile"
+  on public.profiles for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

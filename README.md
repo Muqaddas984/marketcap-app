@@ -1,6 +1,6 @@
 # Marketcap
 
-A Google Finance–style stock investment web app. Track live stock prices, research any US-listed company with charts and news, and manage your own portfolio and watchlist with a real user account.
+A paper-trading web app in the style of Google Finance. Every user gets **$100,000 of virtual cash** to buy and sell real US stocks at live market prices — practice trading, track profit and loss, and learn to read candlestick charts, all risk-free with no real money involved.
 
 ![Dashboard reference design](design/reference.jpg)
 
@@ -8,8 +8,9 @@ A Google Finance–style stock investment web app. Track live stock prices, rese
 
 - **Live dashboard** — your holdings as cards and a sortable table, each with the live price, today's change, market cap, and your profit/loss computed against what you paid. Prices auto-refresh every 60 seconds.
 - **Stock search** — find any US stock by name or ticker with autocomplete. From the results you can open its detail page, quick-add it to your portfolio, or star it onto your watchlist.
-- **Stock detail pages** (`/stock/AAPL`) — live price, a 3-month daily price chart, key stats (open, previous close, day high/low, market cap), recent company news, and a buy box that records shares at the live price or your own custom cost basis. (It tracks your investments — it does not place real trades.)
-- **Portfolio tracking** — Total Value card with overall profit/loss, Top/Worst performer highlights, and a Portfolio History chart that grows from daily snapshots of your total.
+- **Stock detail pages** (`/stock/AAPL`) — live price, an interactive TradingView-style chart with time ranges (1D/5D/1M/6M/1Y/5Y, down to 5-minute candles) and a line/candlestick toggle, key stats (open, previous close, day high/low, market cap), recent company news, and buy/sell forms.
+- **Virtual trading** — buys spend your $100,000 virtual cash at the live market price (with insufficient-funds checks and weighted-average cost basis); sells return proceeds to cash and record realized profit/loss. No real trades, ever.
+- **Portfolio tracking** — Account Value card (cash + invested) with performance vs. your starting capital, Top/Worst performer highlights, and a history chart that grows from daily snapshots.
 - **Watchlist** — follow stocks you don't own, with live prices and day changes.
 - **Market news** — the latest general market headlines, plus per-company news on detail pages.
 - **User accounts** — email/password sign-up and login. Each user's portfolio, watchlist, and history are private, enforced by database row-level security. Includes an account page with change-password.

@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar";
 import { BrandLogo } from "@/components/brand-logo";
 import { AdvancedChart } from "@/components/advanced-chart";
 import { WatchButton } from "@/components/watch-button";
-import { addHolding, sellHolding } from "@/app/actions";
+import { buyStock, sellHolding } from "@/app/actions";
 import { getQuote, getProfile, getCompanyNews } from "@/lib/finnhub";
 import { getUserPortfolio, getWatchRowId } from "@/lib/user-data";
 import { money, compactCap } from "@/lib/data";
@@ -35,7 +35,7 @@ export default async function StockPage({
   if (!/^[A-Z.]{1,10}$/.test(ticker)) notFound();
   const { error, message } = await searchParams;
 
-  const [quote, profile, news, { email, holdings, isDemo }, watchId] = await Promise.all([
+  const [quote, profile, news, { email, holdings, cash, isDemo }, watchId] = await Promise.all([
     getQuote(ticker),
     getProfile(ticker),
     getCompanyNews(ticker),
@@ -133,7 +133,15 @@ export default async function StockPage({
                     at {money(owned.buyPrice)}).
                   </p>
                 )}
-                <form action={addHolding} className="mt-4 flex flex-wrap items-end gap-3">
+                <p className="mt-3 text-sm text-muted">
+                  Virtual cash available:{" "}
+                  <span className="font-semibold text-ink">{money(cash)}</span> — enough for up to{" "}
+                  <span className="font-semibold text-ink">
+                    {Math.floor(cash / quote.price)}
+                  </span>{" "}
+                  shares at the live price.
+                </p>
+                <form action={buyStock} className="mt-4 flex flex-wrap items-end gap-3">
                   <input type="hidden" name="ticker" value={ticker} />
                   <input type="hidden" name="redirectTo" value={`/stock/${ticker}`} />
                   <label className="flex flex-col gap-1 text-xs font-semibold">
@@ -148,24 +156,13 @@ export default async function StockPage({
                       className="w-28 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
                     />
                   </label>
-                  <label className="flex flex-col gap-1 text-xs font-semibold">
-                    Buy price (optional)
-                    <input
-                      name="buyPrice"
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder={money(quote.price)}
-                      className="w-32 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
-                    />
-                  </label>
                   <button className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
-                    {owned ? "Update position" : `Buy ${ticker}`}
+                    Buy at {money(quote.price)}
                   </button>
                 </form>
                 <p className="mt-3 text-xs text-muted">
-                  Recorded at the live price unless you set your own buy price. This tracks your
-                  portfolio — it does not place a real trade.
+                  Buys use your virtual cash at the live market price. Practice trading — no real
+                  money is involved.
                 </p>
                 {owned && (
                   <div id="sell" className="mt-5 scroll-mt-6 border-t border-line pt-5">
@@ -186,24 +183,13 @@ export default async function StockPage({
                           className="w-36 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
                         />
                       </label>
-                      <label className="flex flex-col gap-1 text-xs font-semibold">
-                        Sell price (optional)
-                        <input
-                          name="sellPrice"
-                          type="number"
-                          step="any"
-                          min="0"
-                          placeholder={money(quote.price)}
-                          className="w-32 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
-                        />
-                      </label>
                       <button className="rounded-full bg-negative px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
-                        Sell
+                        Sell at {money(quote.price)}
                       </button>
                     </form>
                     <p className="mt-3 text-xs text-muted">
-                      Sells at the live price unless you set your own. Your realized profit or
-                      loss is recorded and shown on the dashboard.
+                      Sells at the live market price. The proceeds go back into your virtual cash
+                      and your realized profit or loss is recorded on the dashboard.
                     </p>
                   </div>
                 )}

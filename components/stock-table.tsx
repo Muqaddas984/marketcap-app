@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Banknote, ChevronsUpDown, Trash2 } from "lucide-react";
-import { deleteHolding } from "@/app/actions";
+import { ArrowDown, ArrowUp, Banknote, ChevronsUpDown } from "lucide-react";
 import { money, compactCap } from "@/lib/data";
 import type { StockRow } from "@/lib/market";
 import { AddHolding } from "./add-holding";
@@ -98,25 +97,14 @@ export function StockTable({ rows, editable = false }: { rows: StockRow[]; edita
                   {editable && (
                     <td className="py-4 pl-3 text-right">
                       {s.id && (
-                        <div className="flex items-center justify-end gap-1">
-                          <a
-                            href={`/stock/${s.ticker}#sell`}
-                            aria-label={`Sell ${s.ticker}`}
-                            title="Sell shares"
-                            className="rounded-md p-1.5 text-muted transition-colors hover:bg-accent-soft hover:text-accent"
-                          >
-                            <Banknote className="h-4 w-4" />
-                          </a>
-                          <form action={deleteHolding.bind(null, s.id)}>
-                            <button
-                              aria-label={`Remove ${s.ticker}`}
-                              title="Remove without recording a sale"
-                              className="rounded-md p-1.5 text-muted transition-colors hover:bg-negative-soft hover:text-negative"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </form>
-                        </div>
+                        <a
+                          href={`/stock/${s.ticker}#sell`}
+                          aria-label={`Sell ${s.ticker}`}
+                          title="Sell shares"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-negative-soft hover:text-negative"
+                        >
+                          <Banknote className="h-3.5 w-3.5" /> Sell
+                        </a>
                       )}
                     </td>
                   )}

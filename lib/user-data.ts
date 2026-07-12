@@ -1,9 +1,11 @@
-import { holdings as demoHoldings, type Holding } from "./data";
+import { holdings as demoHoldings, demoCash, type Holding } from "./data";
 import { createClient } from "./supabase/server";
 
 export type UserPortfolio = {
   email: string | null;
   holdings: Holding[];
+  /** Virtual cash available for buying stocks. */
+  cash: number;
   /** True when showing the built-in demo portfolio (signed out or Supabase not set up). */
   isDemo: boolean;
 };
@@ -124,17 +126,29 @@ export async function getHistory(): Promise<HistoryPoint[]> {
 
 export async function getUserPortfolio(): Promise<UserPortfolio> {
   const supabase = await createClient();
-  if (!supabase) return { email: null, holdings: demoHoldings, isDemo: true };
+  if (!supabase) return { email: null, holdings: demoHoldings, cash: demoCash, isDemo: true };
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { email: null, holdings: demoHoldings, isDemo: true };
+  if (!user) return { email: null, holdings: demoHoldings, cash: demoCash, isDemo: true };
 
-  const { data } = await supabase
-    .from("holdings")
-    .select("id, ticker, name, shares, buy_price, invest_date")
-    .order("created_at");
+  const [{ data }, { data: profile }] = await Promise.all([
+    supabase
+      .from("holdings")
+      .select("id, ticker, name, shares, buy_price, invest_date")
+      .order("created_at"),
+    supabase.from("profiles").select("cash").eq("user_id", user.id).maybeSingle(),
+  ]);
+
+  let cash: number;
+  if (profile) {
+    cash = Number(profile.cash);
+  } else {
+    // Account predates the cash system or trigger raced — create the wallet now.
+    await supabase.from("profiles").insert({ user_id: user.id });
+    cash = 100000;
+  }
 
   const holdings: Holding[] = (data ?? []).map((r) => ({
     id: r.id as string,
@@ -145,5 +159,5 @@ export async function getUserPortfolio(): Promise<UserPortfolio> {
     investDate: formatDate(r.invest_date as string),
   }));
 
-  return { email: user.email ?? null, holdings, isDemo: false };
+  return { email: user.email ?? null, holdings, cash, isDemo: false };
 }

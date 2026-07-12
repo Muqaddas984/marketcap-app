@@ -15,13 +15,21 @@ async function requireUser() {
   return { supabase, user };
 }
 
-export async function addHolding(formData: FormData) {
+async function getCash(
+  supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
+  userId: string
+): Promise<number> {
+  const { data } = await supabase.from("profiles").select("cash").eq("user_id", userId).maybeSingle();
+  if (data) return Number(data.cash);
+  await supabase.from("profiles").insert({ user_id: userId });
+  return 100000;
+}
+
+export async function buyStock(formData: FormData) {
   const { supabase, user } = await requireUser();
 
   const ticker = String(formData.get("ticker") ?? "").trim().toUpperCase();
   const shares = Number(formData.get("shares"));
-  const buyPriceRaw = String(formData.get("buyPrice") ?? "").trim();
-  const investDate = String(formData.get("investDate") ?? "").trim();
   const backRaw = String(formData.get("redirectTo") ?? "/");
   const back = backRaw.startsWith("/") ? backRaw : "/";
 
@@ -32,26 +40,54 @@ export async function addHolding(formData: FormData) {
   const [quote, profile] = await Promise.all([getQuote(ticker), getProfile(ticker)]);
   if (!quote) redirect(`${back}?error=Could not find a live quote for ${ticker}`);
 
-  const buyPrice = buyPriceRaw ? Number(buyPriceRaw) : quote.price;
-  if (!Number.isFinite(buyPrice) || buyPrice < 0)
-    redirect(`${back}?error=Buy price must be a number`);
+  const price = quote.price;
+  const cost = price * shares;
+  const cash = await getCash(supabase, user.id);
+  if (cost > cash + 1e-9)
+    redirect(
+      `${back}?error=${encodeURIComponent(
+        `Not enough virtual cash — ${shares} ${ticker} costs $${cost.toFixed(2)} but you have $${cash.toFixed(2)}`
+      )}`
+    );
 
-  const { error } = await supabase.from("holdings").upsert(
-    {
+  // Merge into an existing position with a weighted-average cost basis.
+  const { data: existing } = await supabase
+    .from("holdings")
+    .select("id, shares, buy_price")
+    .eq("ticker", ticker)
+    .maybeSingle();
+
+  let dbError: string | null = null;
+  if (existing) {
+    const oldShares = Number(existing.shares);
+    const newShares = oldShares + shares;
+    const avgPrice = (oldShares * Number(existing.buy_price) + cost) / newShares;
+    const { error } = await supabase
+      .from("holdings")
+      .update({ shares: newShares, buy_price: avgPrice })
+      .eq("id", existing.id);
+    dbError = error?.message ?? null;
+  } else {
+    const { error } = await supabase.from("holdings").insert({
       user_id: user.id,
       ticker,
       name: profile?.name ?? ticker,
       shares,
-      buy_price: buyPrice,
-      invest_date: investDate || new Date().toISOString().slice(0, 10),
-    },
-    { onConflict: "user_id,ticker" }
-  );
-  if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}`);
+      buy_price: price,
+      invest_date: new Date().toISOString().slice(0, 10),
+    });
+    dbError = error?.message ?? null;
+  }
+  if (dbError) redirect(`${back}?error=${encodeURIComponent(dbError)}`);
 
-  revalidatePath("/");
-  revalidatePath(back);
-  redirect(back);
+  await supabase.from("profiles").update({ cash: cash - cost }).eq("user_id", user.id);
+
+  revalidatePath("/", "layout");
+  redirect(
+    `${back}?message=${encodeURIComponent(
+      `Bought ${shares} ${ticker} at $${price.toFixed(2)} for $${cost.toFixed(2)}`
+    )}`
+  );
 }
 
 export async function sellHolding(formData: FormData) {
@@ -59,7 +95,6 @@ export async function sellHolding(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const sharesToSell = Number(formData.get("shares"));
-  const priceRaw = String(formData.get("sellPrice") ?? "").trim();
   const backRaw = String(formData.get("redirectTo") ?? "/");
   const back = backRaw.startsWith("/") ? backRaw : "/";
 
@@ -77,9 +112,9 @@ export async function sellHolding(formData: FormData) {
     redirect(`${back}?error=You only own ${owned} shares of ${holding.ticker}`);
 
   const quote = await getQuote(holding.ticker as string);
-  const sellPrice = priceRaw ? Number(priceRaw) : quote?.price;
+  const sellPrice = quote?.price;
   if (!sellPrice || !Number.isFinite(sellPrice) || sellPrice <= 0)
-    redirect(`${back}?error=Could not determine a sell price for ${holding.ticker}`);
+    redirect(`${back}?error=Could not determine a live sell price for ${holding.ticker}`);
 
   const buyPrice = Number(holding.buy_price);
   const profit = (sellPrice - buyPrice) * sharesToSell;
@@ -102,19 +137,18 @@ export async function sellHolding(formData: FormData) {
     await supabase.from("holdings").delete().eq("id", id);
   }
 
+  // Sale proceeds go back into virtual cash.
+  const proceeds = sellPrice * sharesToSell;
+  const cash = await getCash(supabase, user.id);
+  await supabase.from("profiles").update({ cash: cash + proceeds }).eq("user_id", user.id);
+
   revalidatePath("/", "layout");
   const sign = profit >= 0 ? "profit" : "loss";
   redirect(
     `${back}?message=${encodeURIComponent(
-      `Sold ${sharesToSell} ${holding.ticker} at $${sellPrice.toFixed(2)} — ${sign} $${Math.abs(profit).toFixed(2)}`
+      `Sold ${sharesToSell} ${holding.ticker} at $${sellPrice.toFixed(2)} for $${proceeds.toFixed(2)} — ${sign} $${Math.abs(profit).toFixed(2)}`
     )}`
   );
-}
-
-export async function deleteHolding(id: string) {
-  const { supabase } = await requireUser();
-  await supabase.from("holdings").delete().eq("id", id);
-  revalidatePath("/");
 }
 
 export async function addToWatchlist(ticker: string, name: string) {
