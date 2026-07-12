@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { House, LayoutGrid, ScrollText, Star, Trophy, Users, LogIn, LogOut } from "lucide-react";
+import {
+  ChartPie,
+  House,
+  LayoutGrid,
+  ScrollText,
+  Star,
+  Trophy,
+  Users,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import { signOut } from "@/app/actions";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -7,6 +17,7 @@ const mainNav = [
   { label: "Overview", icon: House, href: "/", active: true },
   { label: "My Stock", icon: LayoutGrid, href: "/#my-stock" },
   { label: "Watchlist", icon: Star, href: "/#watchlist" },
+  { label: "Analytics", icon: ChartPie, href: "/analytics" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "History", icon: ScrollText, href: "/history" },
   { label: "Account", icon: Users, href: "/account" },
