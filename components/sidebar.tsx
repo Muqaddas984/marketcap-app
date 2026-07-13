@@ -1,11 +1,11 @@
 import Link from "next/link";
 import {
+  BookOpen,
   ChartPie,
   House,
   LayoutGrid,
   ScrollText,
   Star,
-  Trophy,
   Users,
   LogIn,
   LogOut,
@@ -15,11 +15,11 @@ import { ThemeToggle } from "./theme-toggle";
 
 const mainNav = [
   { label: "Overview", icon: House, href: "/", active: true },
-  { label: "My Stock", icon: LayoutGrid, href: "/#my-stock" },
+  { label: "Holdings", icon: LayoutGrid, href: "/#my-stock" },
   { label: "Watchlist", icon: Star, href: "/#watchlist" },
   { label: "Analytics", icon: ChartPie, href: "/analytics" },
-  { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "History", icon: ScrollText, href: "/history" },
+  { label: "How to Trade", icon: BookOpen, href: "/guide" },
   { label: "Account", icon: Users, href: "/account" },
 ];
 
