@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CircleAlert, MailCheck } from "lucide-react";
 import { supabaseConfigured } from "@/lib/supabase/server";
-import { signIn, signUp } from "./actions";
+import { forgotPassword, signIn, signUp } from "./actions";
 
 export const metadata = { title: "Sign in — Marketcap" };
 
@@ -88,6 +88,13 @@ export default async function LoginPage({
               Create account
             </button>
           </div>
+          <button
+            formAction={forgotPassword}
+            formNoValidate
+            className="self-center text-sm text-muted underline-offset-2 hover:text-ink hover:underline"
+          >
+            Forgot password?
+          </button>
         </form>
 
         <Link href="/" className="mt-6 block text-center text-sm text-muted hover:text-ink">
