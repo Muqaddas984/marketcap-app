@@ -19,7 +19,7 @@ const mainNav = [
   { label: "Watchlist", icon: Star, href: "/#watchlist" },
   { label: "Analytics", icon: ChartPie, href: "/analytics" },
   { label: "History", icon: ScrollText, href: "/history" },
-  { label: "How to Trade", icon: BookOpen, href: "/guide" },
+  { label: "Guide", icon: BookOpen, href: "/guide" },
   { label: "Account", icon: Users, href: "/account" },
 ];
 
