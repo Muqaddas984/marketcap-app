@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CircleAlert, MailCheck } from "lucide-react";
+import { SubmitButton } from "@/components/submit-button";
 import { supabaseConfigured } from "@/lib/supabase/server";
 import { forgotPassword, signIn, signUp } from "./actions";
 
@@ -75,26 +76,29 @@ export default async function LoginPage({
             />
           </label>
           <div className="mt-2 flex gap-3">
-            <button
+            <SubmitButton
               formAction={signIn}
+              pendingText="Signing in…"
               className="flex-1 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               Sign in
-            </button>
-            <button
+            </SubmitButton>
+            <SubmitButton
               formAction={signUp}
+              pendingText="Creating…"
               className="flex-1 rounded-full border border-line px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-background"
             >
               Create account
-            </button>
+            </SubmitButton>
           </div>
-          <button
+          <SubmitButton
             formAction={forgotPassword}
             formNoValidate
+            pendingText="Sending reset email…"
             className="self-center text-sm text-muted underline-offset-2 hover:text-ink hover:underline"
           >
             Forgot password?
-          </button>
+          </SubmitButton>
         </form>
 
         <Link href="/" className="mt-6 block text-center text-sm text-muted hover:text-ink">

@@ -89,6 +89,7 @@ export default async function Home({
             changePct={portfolio.changePct}
             rows={rows}
             realized={realized}
+            demo={isDemo}
           />
           <StatisticsChart history={history} />
         </div>

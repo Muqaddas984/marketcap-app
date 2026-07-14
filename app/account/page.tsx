@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CircleAlert, CircleCheck } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/sidebar";
+import { SubmitButton } from "@/components/submit-button";
 import { updatePassword } from "./actions";
 
 export const metadata = { title: "Account — Marketcap" };
@@ -66,9 +67,12 @@ export default async function AccountPage({
                 className={inputClass}
               />
             </label>
-            <button className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+            <SubmitButton
+              pendingText="Updating…"
+              className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
               Update password
-            </button>
+            </SubmitButton>
           </form>
         </div>
 

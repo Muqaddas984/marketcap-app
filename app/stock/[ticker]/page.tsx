@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowDown, ArrowUp, CircleAlert, CircleCheck } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { BrandLogo } from "@/components/brand-logo";
+import { SubmitButton } from "@/components/submit-button";
 import { AdvancedChart } from "@/components/advanced-chart";
 import { WatchButton } from "@/components/watch-button";
 import { buyStock, sellHolding } from "@/app/actions";
@@ -156,9 +157,12 @@ export default async function StockPage({
                       className="w-28 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
                     />
                   </label>
-                  <button className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                  <SubmitButton
+                    pendingText="Buying…"
+                    className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  >
                     Buy at {money(quote.price)}
-                  </button>
+                  </SubmitButton>
                 </form>
                 <p className="mt-3 text-xs text-muted">
                   Buys use your virtual cash at the live market price. Practice trading — no real
@@ -183,9 +187,12 @@ export default async function StockPage({
                           className="w-36 rounded-xl border border-line bg-background px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
                         />
                       </label>
-                      <button className="rounded-full bg-negative px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                      <SubmitButton
+                        pendingText="Selling…"
+                        className="rounded-full bg-negative px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                      >
                         Sell at {money(quote.price)}
-                      </button>
+                      </SubmitButton>
                     </form>
                     <p className="mt-3 text-xs text-muted">
                       Sells at the live market price. The proceeds go back into your virtual cash

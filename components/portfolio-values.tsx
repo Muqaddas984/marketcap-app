@@ -12,6 +12,7 @@ export function PortfolioValues({
   changePct,
   rows,
   realized = 0,
+  demo = false,
 }: {
   /** Market value of all holdings. */
   total: number;
@@ -20,6 +21,8 @@ export function PortfolioValues({
   changePct: number;
   rows: StockRow[];
   realized?: number;
+  /** True when showing the signed-out demo portfolio. */
+  demo?: boolean;
 }) {
   const [view, setView] = useState<"top" | "worst" | null>(null);
   const up = changePct >= 0;
@@ -33,7 +36,14 @@ export function PortfolioValues({
 
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-card p-6">
-      <h2 className="text-lg font-bold">Account Value</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold">Account Value</h2>
+        {demo && (
+          <span className="rounded-full bg-background px-2.5 py-1 text-[10px] font-semibold text-muted">
+            Example — sign in to trade
+          </span>
+        )}
+      </div>
 
       <div className="mt-4 flex items-center gap-3">
         <span className="text-4xl font-extrabold tracking-tight">{money(accountValue)}</span>

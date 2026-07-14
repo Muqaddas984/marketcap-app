@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus, Search, Star } from "lucide-react";
 import { buyStock, addToWatchlist } from "@/app/actions";
 import type { SearchHit } from "@/lib/finnhub";
+import { SubmitButton } from "./submit-button";
 
 export function StockSearch({ editable }: { editable: boolean }) {
   const [query, setQuery] = useState("");
@@ -89,9 +90,12 @@ export function StockSearch({ editable }: { editable: boolean }) {
                 placeholder="Shares"
                 className="w-24 rounded-xl border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent"
               />
-              <button className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90">
-                Add
-              </button>
+              <SubmitButton
+                pendingText="Buying…"
+                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Buy
+              </SubmitButton>
             </form>
           ) : (
             <ul>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { buyStock } from "@/app/actions";
+import { SubmitButton } from "./submit-button";
 
 export function AddHolding() {
   const [open, setOpen] = useState(false);
@@ -44,9 +45,12 @@ export function AddHolding() {
           className="w-24 rounded-xl border border-line bg-card px-4 py-2.5 text-sm font-normal outline-none focus:border-accent"
         />
       </label>
-      <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+      <SubmitButton
+        pendingText="Buying…"
+        className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+      >
         Buy at live price
-      </button>
+      </SubmitButton>
       <button
         type="button"
         aria-label="Cancel"
